@@ -435,7 +435,7 @@ var SYS_BASE=[
 ].join("\n");
 var ITEMS=[["結論・要点",20],["具体性",20],["説得力・一貫性",20],["言葉遣い",15],["話の組み立て・簡潔さ",15],["意欲・誠実さ",10]];
 var SYS_GRADE=SYS_BASE+"\n\n【今回の仕事：採点】観点（合計100点）："+ITEMS.map(function(x){return x[0]+x[1]}).join("、")+"。目安は30秒〜1分（150〜300字）。質問に答えていない場合は、結論と組み立てを大きく減点。合格ラインの目安は70点。\nJSONだけを、短く出力（前後に文章やコードブロックを付けない）：{\"b\":[6つの整数],\"c\":[\"各観点のひとこと（6つ、各20字以内）\"],\"hyouka\":\"総評（良い点→いちばん大きな課題の順、120字以内）\",\"good\":[\"良かった点（2つ、各35字以内）\"],\"deep\":\"面接官が次にしそうな追撃の質問（回答の言葉を拾って1つ、50字以内）\",\"hitokoto\":\"先生からの励まし（40字以内）\"}";
-var SYS_FIX=SYS_BASE+"\n\n【今回の仕事：添削・アドバイス・模範例】次の形式だけで出力してください（各行の先頭の記号を必ず付ける。前後に説明を付けない）。\nFIX|回答から短く抜き出した部分（25字以内）|言い直し例（60字以内）|理由（30字以内）\nFIX|…（大事な順に2つ。直す所が少なければ1つ）\nADV|次に答えるときのアドバイス（35字以内）\nADV|…（3つ）\nMODEL|この生徒の回答の良いところと事実を生かした模範回答。話し言葉の「です・ます」、結論から、200〜280字、1行で。";
+var SYS_FIX=SYS_BASE+"\n\n【今回の仕事：添削・アドバイス・模範例】次の形式だけで出力してください（各行の先頭の記号を必ず付ける。前後に説明を付けない）。\nFIX|回答から短く抜き出した部分（25字以内）|言い直し例（45字以内）|理由（25字以内）\nFIX|…（大事な順に2つまで）\nADV|次に答えるときのアドバイス（30字以内）\nADV|…（3つ）\nMODEL|この生徒の回答の良いところと事実を生かした模範回答。話し言葉の「です・ます」、結論から、180〜250字、1行で。";
 function parseJSON(t){var m=String(t||"").match(/\{[\s\S]*\}/);if(!m)return null;try{return JSON.parse(m[0])}catch(e){return null}}
 function ask(url,sys,user){var b={action:"ai_chat",systemPrompt:sys,messages:[{role:"user",content:user}]};var tok=apiToken();if(tok)b.token=tok;
   return postJSON(url,b).then(function(d){return {text:(d&&d.reply)||"",err:(d&&d.error)||""}})}
