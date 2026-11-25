@@ -7,13 +7,13 @@
 <style>
 :root{
   --bg:#f4f7fc; --card:#ffffff; --ink:#1f2a3d; --sub:#5b6880;
-  --blue:#0f7a8a; --blue-d:#0b4f5c; --blue-l:#dff1f3;
+  --blue:#1f5fbf; --blue-d:#163f86; --blue-l:#e3ecfa;
   --sun:#ffc23c; --sun-l:#fff5d6; --coral:#e8473c; --coral-l:#fde6e3;
   --mint:#2fb383; --mint-l:#ddf5ea; --line:#d5deec;
 }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Yu Gothic UI","Meiryo",sans-serif;line-height:1.8;font-size:16px}
-header{background:linear-gradient(135deg,#0b4f5c 0%,#0f7a8a 55%,#3a9d5d 100%);color:#fff;padding:18px 16px 14px}
+header{background:linear-gradient(135deg,#163f86 0%,#1f5fbf 55%,#e8473c 100%);color:#fff;padding:18px 16px 14px}
 header h1{margin:0;font-size:20px;letter-spacing:.04em}
 header p{margin:2px 0 0;font-size:13px;opacity:.95}
 nav{position:sticky;top:0;z-index:5;background:#fff;border-bottom:2px solid var(--line);display:flex;overflow-x:auto;gap:4px;padding:6px 8px}
@@ -160,7 +160,7 @@ var KATA=[
   {lb:"④ 結論・貢献",guide:"「この経験を、御社の商品づくりに生かしたいです。」で締めます。"}
 ];
 
-var S={consent:false, tab:"home", cur:null, hintStep:-1, kOpen:{}, quizI:0, quizOk:0, quizAns:-1, quizOrder:null, mock:null, autoMode:false};
+var S={consent:false, tab:"home", cur:null, hintStep:-1, kOpen:{}, quizI:0, quizOk:0, quizAns:-1, cardI:0, quizOrder:null, mock:null, autoMode:false};
 var D={answers:{}, results:{}, aihint:{}};
 
 /* ---------- 保存（この端末のブラウザだけ） ---------- */
@@ -181,12 +181,13 @@ function byId(id){for(var i=0;i<QUESTIONS.length;i++)if(QUESTIONS[i].id===id)ret
 function cat(k){for(var i=0;i<CATS.length;i++)if(CATS[i].k===k)return CATS[i];return {k:k,t:"",ic:""}}
 function qno(q){return QUESTIONS.indexOf(q)+1}
 function estSec(t){return Math.round(count(t)/5)} // 1秒に約5字（1分300字）
-function starTag(q){return q.star?'<span class="star">★ 重要</span>':''}
+function stars(n){var s="";for(var i=0;i<5;i++)s+=i<n?"★":"☆";return s}
+function starTag(q){return '<span class="stars">'+stars(q.star?5:3)+'</span>'}
 
 var PII=[/0\d{1,4}[-ー−\s]?\d{1,4}[-ー−\s]?\d{3,4}/, /\d{3}[-ー−]\d{4}/, /[\w.+-]+@[\w-]+\.[\w.]+/, /〒/, /(県|市|町|村)[^\s]{0,8}(\d+丁目|\d+番地|\d+-\d+)/];
 function hasPII(t){for(var i=0;i<PII.length;i++)if(PII[i].test(t||""))return true;return false}
 
-var TABS=[["home","🏠 ホーム"],["know","📘 会社の知識"],["tips","💡 心得・逆質問"],["list","📋 質問一覧"],["practice","🎤 練習する"],["mock","🎯 本番モード"],["record","📈 きろく"],["teacher","⚙ 先生用"]];
+var TABS=[["home","🏠 ホーム"],["know","📘 基礎知識"],["tips","💡 面接の心得"],["list","📋 質問一覧"],["practice","🎤 練習する"],["mock","🎯 本番モード"],["record","📈 きろく"],["teacher","⚙ 先生用"]];
 function drawNav(){
   nav.className=S.consent?"":"hide";
   nav.innerHTML=TABS.map(function(t){return '<button data-t="'+t[0]+'" class="'+(S.tab===t[0]?"on":"")+'">'+t[1]+'</button>'}).join("");
@@ -214,8 +215,8 @@ function bindConsent(){var a=$("agree"),g=$("go");a.onchange=function(){g.disabl
 /* ---------- ホーム ---------- */
 function daysLeft(){var t=new Date(2026,11,1),n=new Date();n=new Date(n.getFullYear(),n.getMonth(),n.getDate());return Math.round((t-n)/86400000)}
 function viewHome(){
-  var steps=[["know","📘","① 会社の知識を入れる","地震と会社の対応、復興支援、使命、シェア。最後に暗記チェック12問。"],
-             ["tips","💡","② 心得と逆質問","答え方の型（PREP）、入室から退室まで、おすすめの逆質問。"],
+  var steps=[["know","📘","① 基礎知識を入れる","カネリョウ海藻の歴史・理念・事業・商品・研究、地震と会社の対応。要点カードと確認クイズ。"],
+             ["tips","💡","② 面接の心得","答え方の型（PREP）、入室から退室まで、おすすめの逆質問。"],
              ["list","📋","③ 40問を1問ずつ練習","声に出して答えると、AIが採点・添削し、アドバイスと模範例を出します。★重要から。"],
              ["mock","🎯","④ 本番モード","面接官が質問を読み上げ、続けて答えます。最後にまとめて採点。"],
              ["record","📈","きろく","点数の記録。印刷して先生に見せましょう。"]];
@@ -224,7 +225,7 @@ function viewHome(){
   var sp=recogOK()?'':'<div class="tip small">このブラウザは音声入力に対応していないようです。文字で入力して練習できます。音声で練習するときは、Chrome（パソコン・Android）か、iPhone の Safari を使いましょう。</div>';
   return '<div class="card"><h2>ようこそ</h2>'+(dl>0?'<p><b style="font-size:18px;color:#b8322a">最終面接（12月1日）まで、あと '+dl+' 日</b></p>':(dl===0?'<p><b style="font-size:18px;color:#b8322a">今日は最終面接の日です。★重要の質問だけ、軽く声に出しましょう。</b></p>':''))+
   '<p>ここまで来たあなたは、すでに会社から「一緒に働けるかもしれない」と思われている人です。最終面接では、新しい自分を見せる必要はありません。ESと二次面接で話したことを、もう一度、誠実に、あなたの言葉で話しましょう。</p>'+
-  '<p>まず <span class="star">★ 重要</span> の8問（志望度と公務員との併願）から、<b>声に出して</b>答えてみましょう。</p>'+
+  '<p>まず <span class="stars">★★★★★</span> の8問（志望度と公務員との併願）から、<b>声に出して</b>答えてみましょう。</p>'+
   '<div class="progress"><i style="width:'+Math.round(done/Math.max(1,QUESTIONS.length)*100)+'%"></i></div><p class="small">採点まで終わった質問：'+done+' / '+QUESTIONS.length+'</p></div>'+sp+
   '<div class="grid two">'+steps.map(function(s){return '<button class="tile" data-go="'+s[0]+'"><span class="ic">'+s[1]+'</span><b>'+s[2]+'</b>'+s[3]+'</button>'}).join("")+'</div>'+
   (apiUrl()?'':'<div class="tip small">いまはAIにつながっていません。採点のかわりに「採点用の文章をコピー」が使えます。先生は「⚙ 先生用」から設定できます。</div>')}
@@ -234,19 +235,22 @@ function bindHome(){each("[data-go]",function(b){b.onclick=function(){go(b.getAt
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=a[i];a[i]=a[j];a[j]=t}return a}
 function quizOrder(){if(!S.quizOrder)S.quizOrder=QUIZ.map(function(z){return shuffle(z.c.map(function(c,i){return i}))});return S.quizOrder}
 function viewKnow(){
-  return '<div class="card"><h2>📘 面接の前に入れておく知識</h2><p>最終面接では、「会社をどれだけ調べてきたか」「二次面接のあとに何を知ったか」も見られます。<span class="pill must">必ず</span> の付いた項目から読みましょう。</p>'+
+  return '<div class="card"><h2>📘 面接の前に入れておく基礎知識</h2><p>最終面接では、「会社をどれだけ調べてきたか」「二次面接のあとに何を知ったか」も見られます。<span class="pill must">必ず</span> の付いた項目から読みましょう。</p>'+
   '<p class="small">'+esc(KNOW_UPDATED)+'時点の会社の公表内容です。面接の前日（11月30日）に、カネリョウ海藻の公式サイトで続報がないか確認しましょう。</p>'+
-  '<div class="row"><button class="btn sun sm" data-jump="quiz">✅ 暗記チェックへ</button><button class="btn line sm" id="kAll">全部ひらく</button></div></div>'+
+  '<div class="row"><button class="btn sun sm" data-jump="quiz">✅ 確認クイズへ</button><button class="btn line sm" data-jump="cards">🃏 要点カードへ</button><button class="btn line sm" id="kAll">全部ひらく</button></div></div>'+
   KNOWLEDGE.map(function(k){var o=S.kOpen[k.id];
     return '<div class="card kn"><button class="qitem" style="border:0;padding:0" data-k="'+k.id+'"><span style="font-size:24px">'+k.ic+'</span><span style="flex:1"><b style="font-size:17px;color:var(--blue-d)">'+esc(k.t)+'</b> '+(k.must?'<span class="pill must">必ず</span>':'')+'</span><span class="small">'+(o?'▲ とじる':'▼ ひらく')+'</span></button>'+
     (o?'<ul>'+k.pts.map(function(p){return '<li>'+esc(p)+'</li>'}).join("")+'</ul>'+
       '<div class="say"><b>🗣 面接での言い方の例</b><br>'+esc(k.say)+'</div><div class="src">出典：'+esc(k.src)+'</div>':'')+'</div>'}).join("")+
+  '<div class="card" id="cards"><h2>🃏 要点カード（'+CARDS.length+'枚）</h2><p class="small">面接の直前に見直すカードです。「次へ」でめくりましょう。</p>'+
+  '<div class="cardq">'+(S.cardI+1)+'. '+esc(CARDS[S.cardI])+'</div>'+
+  '<p><button class="btn line sm" id="cPrev" '+(S.cardI===0?'disabled':'')+'>← 前へ</button> <button class="btn sm" id="cNext">'+(S.cardI<CARDS.length-1?'次へ →':'最初にもどる')+'</button> <span class="small">'+(S.cardI+1)+' / '+CARDS.length+'</span></p></div>'+
   quizHtml()}
 function quizHtml(){
-  if(S.quizI>=QUIZ.length)return '<div class="card" id="quiz"><h2>✅ 暗記チェック　結果</h2><div class="score"><div class="big" style="color:'+(S.quizOk>=11?'#1b7d59':'#a07400')+'">'+S.quizOk+'<small> / '+QUIZ.length+'問</small></div></div>'+
+  if(S.quizI>=QUIZ.length)return '<div class="card" id="quiz"><h2>✅ 確認クイズ　結果</h2><div class="score"><div class="big" style="color:'+(S.quizOk>=11?'#1b7d59':'#a07400')+'">'+S.quizOk+'<small> / '+QUIZ.length+'問</small></div></div>'+
     '<p>'+(S.quizOk===QUIZ.length?'全問正解！ 面接で使える知識が入っています。':(S.quizOk>=9?'あと少し！ まちがえた所を読み直しましょう。':'もう一度、<span class="pill must">必ず</span> の項目を読んでから挑戦しましょう。'))+'</p><button class="btn" id="qzRe">もう一度</button></div>';
   var z=QUIZ[S.quizI], a=S.quizAns, ord=quizOrder()[S.quizI];
-  return '<div class="card" id="quiz"><h2>✅ 暗記チェック　'+(S.quizI+1)+' / '+QUIZ.length+'</h2><p class="small" style="margin:0">前日と当日の朝に、見ずに答えられるようにしましょう。</p><div class="progress"><i style="width:'+Math.round(S.quizI/QUIZ.length*100)+'%"></i></div>'+
+  return '<div class="card" id="quiz"><h2>✅ 確認クイズ　'+(S.quizI+1)+' / '+QUIZ.length+'</h2><p class="small" style="margin:0">前日と当日の朝に、見ずに答えられるようにしましょう。</p><div class="progress"><i style="width:'+Math.round(S.quizI/QUIZ.length*100)+'%"></i></div>'+
   '<p style="font-size:18px;font-weight:700">'+esc(z.q)+'</p>'+
   ord.map(function(ci,n){var cls=a<0?'':(ci===z.a?' right':(ci===a?' wrong':''));return '<button class="quiz-c'+cls+'" data-qz="'+ci+'" '+(a>=0?'disabled':'')+'>'+(n+1)+'. '+esc(z.c[ci])+'</button>'}).join("")+
   (a>=0?'<div class="'+(a===z.a?'ok':'tip')+'"><b>'+(a===z.a?'⭕ 正解！':'❌ ざんねん')+'</b><br>'+esc(z.e)+'</div><button class="btn" id="qzNext">'+(S.quizI<QUIZ.length-1?'次の問題 →':'結果を見る')+'</button>':'')+'</div>'}
@@ -255,6 +259,8 @@ function bindKnow(){
   $("kAll").onclick=function(){KNOWLEDGE.forEach(function(k){S.kOpen[k.id]=true});render()};
   each("[data-jump]",function(b){b.onclick=function(){$(b.getAttribute("data-jump")).scrollIntoView({behavior:"smooth"})}});
   function keep(fn,id){return function(){fn();render();$(id).scrollIntoView()}}
+  $("cPrev").onclick=keep(function(){S.cardI--},"cards");
+  $("cNext").onclick=keep(function(){S.cardI=(S.cardI+1)%CARDS.length},"cards");
   each("[data-qz]",function(b){b.onclick=keep(function(){S.quizAns=parseInt(b.getAttribute("data-qz"),10);if(S.quizAns===QUIZ[S.quizI].a)S.quizOk++},"quiz")});
   var n=$("qzNext");if(n)n.onclick=keep(function(){S.quizI++;S.quizAns=-1},"quiz");
   var r=$("qzRe");if(r)r.onclick=keep(function(){S.quizI=0;S.quizOk=0;S.quizAns=-1;S.quizOrder=null},"quiz");
@@ -275,7 +281,7 @@ function bindTips(){$("toList").onclick=function(){go("list")}}
 /* ---------- 質問一覧 ---------- */
 function best(id){var r=D.results[id]||[];return r.length?Math.max.apply(null,r.map(function(x){return x.score})):null}
 function viewList(){
-  return '<div class="card"><h2>📋 想定質問（'+QUESTIONS.length+'問）</h2><p>押すと練習画面になります。<span class="star">★ 重要</span> は、公務員との併願や入社意欲に関わる、特に大切な質問です。</p>'+
+  return '<div class="card"><h2>📋 想定質問（'+QUESTIONS.length+'問）</h2><p>押すと練習画面になります。<span class="stars">★★★★★</span> は、公務員との併願や入社意欲に関わる、特に大切な質問です。必ず聞かれると考えて準備しましょう。</p>'+
   '<div class="row"><button class="btn sun sm" id="rndStar">★重要からランダムに1問</button><button class="btn line sm" id="rndAll">全体からランダムに1問</button></div></div>'+
   CATS.map(function(c){
     var qs=QUESTIONS.filter(function(q){return q.cat===c.k});
@@ -684,8 +690,7 @@ function viewTeacher(){
   '<div class="card"><h2>しくみ・費用について</h2><ul>'+
   '<li>Claude のAPIキーは、<b>このアプリには書きません</b>。いつもの gamba-api（Cloudflare）のシークレットに入っているものを、これまでの「ai_chat」の入口から使います。gamba-api の書き換えは不要です。</li>'+
   '<li>採点1回で、AIに2回たずねます（①採点・総評 ②添削・アドバイス・模範例）。gamba-api の上限は「同じ回線から1時間40回」なので、1時間に約20回まで採点できます。上限に当たると「混み合っています」と出ます。</li>'+
-  '<li>費用の目安は、採点1回あたりおよそ5〜10円、AIヒント1回でおよそ3円です。本番モードのまとめて採点は、問題数分かかります。</li>'+
-  '<li>競輪養成所の面接GAMBAは、<a href="keirin/">keirin/</a> に移しました（URL：このページのアドレスの最後に keirin/ を付けたもの）。</li></ul></div>'}
+  '<li>費用の目安は、採点1回あたりおよそ5〜10円、AIヒント1回でおよそ3円です。本番モードのまとめて採点は、問題数分かかります。</li></ul></div>'}
 function bindTeacher(){
   $("tsave").onclick=function(){store("kaneryo_api_url",$("tu").value.trim()||null);store("kaneryo_app_token",$("tt").value.trim()||null);render()};
   $("tdel").onclick=function(){store("kaneryo_api_url",null);store("kaneryo_app_token",null);render()};
