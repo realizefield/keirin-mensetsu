@@ -57,6 +57,7 @@ input:focus,textarea:focus,select:focus{outline:none;border-color:var(--blue)}
 .progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin:8px 0}
 .progress i{display:block;height:100%;background:var(--mint)}
 .stars{color:#f0a500;letter-spacing:1px;font-size:14px}
+.real{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:1px 9px;background:var(--coral-l);color:#b8322a;border:1px solid var(--coral);margin-left:4px}
 .done-badge{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;background:var(--mint-l);color:#1b7d59;margin-left:6px}
 .chip{display:inline-block;border:1px solid var(--blue);background:#fff;color:var(--blue-d);border-radius:999px;padding:3px 10px;margin:3px 4px 3px 0;font-size:14px;cursor:pointer;font-family:inherit;text-align:left;line-height:1.5}
 .chip:hover{background:var(--blue-l)}
@@ -187,7 +188,7 @@ function bindConsent(){var a=$("agree"),g=$("go");a.onchange=function(){g.disabl
 function viewHome(){
   var steps=[["know","📘","① 基礎知識を入れる","理念・所長の言葉・売上・養成所の生活・先輩の思い。最後に確認クイズ。"],
              ["tips","💡","② 面接の心得","答え方の型（PREP）、長さ、言葉づかい。録音される口頭試問の注意。"],
-             ["list","📋","③ 質問を選んで練習","想定質問22問。★の多い質問から。声に出して答えると、AIが採点します。"],
+             ["list","📋","③ 質問を選んで練習","想定質問"+QUESTIONS.length+"問。★の多い質問と、🎯 実際に出た質問から。声に出して答えると、AIが採点します。"],
              ["mock","🎯","④ 本番モード","面接官が質問を読み上げ、続けて答えます。最後にまとめて採点。"],
              ["record","📈","きろく","点数の記録。印刷して先生に見せましょう。"]];
   var done=QUESTIONS.filter(function(q){return D.results[q.id]&&D.results[q.id].length}).length;
@@ -244,11 +245,11 @@ function bindTips(){$("toList").onclick=function(){go("list")}}
 /* ---------- 質問一覧 ---------- */
 function best(id){var r=D.results[id]||[];return r.length?Math.max.apply(null,r.map(function(x){return x.score})):null}
 function viewList(){
-  return '<div class="card"><h2>📋 想定質問（22問）</h2><p>押すと練習画面になります。<span class="stars">★★★★★</span> は必ず聞かれると考えて準備する質問です。</p></div>'+
+  return '<div class="card"><h2>📋 想定質問（'+QUESTIONS.length+'問）</h2><p>押すと練習画面になります。<span class="stars">★★★★★</span> は必ず聞かれると考えて準備する質問です。</p><p class="small"><span class="real">🎯 実際に出た</span> は、2026年11月26日の女子の2次試験で、ほぼ同じ質問が実際に出たものです。最優先で練習しましょう。</p></div>'+
   CATS.map(function(c){
     var qs=QUESTIONS.filter(function(q){return q.cat===c.k});
     return '<div class="card"><h2>'+c.ic+' '+esc(c.t)+'</h2>'+qs.map(function(q){var b=best(q.id);
-      return '<button class="qitem" data-q="'+q.id+'"><span class="qno">Q'+qno(q)+'</span><span style="flex:1">'+esc(q.q)+'<br><span class="stars">'+stars(q.star)+'</span>'+(b!==null?'<span class="done-badge">最高 '+b+'点</span>':'')+'</span></button>'}).join("")+'</div>'}).join("")}
+      return '<button class="qitem" data-q="'+q.id+'"><span class="qno">Q'+qno(q)+'</span><span style="flex:1">'+esc(q.q)+'<br><span class="stars">'+stars(q.star)+'</span>'+(q.real?' <span class="real">🎯 実際に出た</span>':'')+(b!==null?'<span class="done-badge">最高 '+b+'点</span>':'')+'</span></button>'}).join("")+'</div>'}).join("")}
 function bindList(){each("[data-q]",function(b){b.onclick=function(){openQ(byId(b.getAttribute("data-q")))}})}
 function openQ(q,parent){S.cur={q:q,parent:parent||null,key:parent?q.id+"_deep_"+Date.now():q.id};S.hintStep=-1;go("practice")}
 
@@ -320,7 +321,7 @@ function viewPractice(){
   if(!c)return '<div class="card"><h2>🎤 練習する</h2><p>まず、練習する質問を選びましょう。</p><button class="btn" id="toL">質問一覧へ →</button> <button class="btn sun" id="rnd">ランダムに1問</button></div>';
   var q=c.q, deep=!!c.parent, ans=D.answers[c.key]||"";
   var h='<div class="card"><div class="qhead"><span class="qno" style="'+(deep?'background:var(--coral)':'')+'">'+(deep?'深掘り':'Q'+qno(c.parent?c.parent.q:q))+'</span><div style="flex:1">'+
-    (deep?'<div class="small">元の質問：'+esc(c.parent.q.q)+'</div>':'<div class="small">'+cat(q.cat).ic+' '+esc(cat(q.cat).t)+'　<span class="stars">'+stars(q.star)+'</span></div>')+
+    (deep?'<div class="small">元の質問：'+esc(c.parent.q.q)+'</div>':'<div class="small">'+cat(q.cat).ic+' '+esc(cat(q.cat).t)+'　<span class="stars">'+stars(q.star)+'</span>'+(q.real?' <span class="real">🎯 実際に出た</span>':'')+'</div>')+
     '<div class="qtext'+(deep?' deep':'')+'">'+esc(q.q)+'</div></div></div>'+
     '<div class="row noprint" style="margin-top:8px"><button class="btn line sm" id="say">🔊 質問を読み上げる</button>'+
     '<label style="display:flex;gap:6px;align-items:center;margin:0;font-weight:500;font-size:14px"><input type="checkbox" id="auto" style="width:auto" '+(S.autoMode?'checked':'')+'> 面接官モード（読み上げのあと自動でマイク）</label></div>'+
@@ -521,6 +522,7 @@ function bindCopyBox(){$("cpb").onclick=function(){var x=$("cpt");x.select();
 function pickMock(kind){
   var qs=QUESTIONS.filter(function(q){return q.id!=="q22"});
   if(kind==="star5")qs=qs.filter(function(q){return q.star>=5});
+  if(kind==="real")qs=qs.filter(function(q){return q.real});
   for(var i=qs.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),t=qs[i];qs[i]=qs[j];qs[j]=t}
   if(kind==="5")qs=qs.slice(0,5); if(kind==="10")qs=qs.slice(0,10);
   qs.unshift(QUESTIONS[0]);  // 最初は志望動機
@@ -534,7 +536,8 @@ function viewMock(){
     '<div class="grid two"><button class="tile" data-mk="5"><span class="ic">⏱</span><b>ショート（7問）</b>志望動機＋ランダム5問＋最後のひとこと。約10分。</button>'+
     '<button class="tile" data-mk="star5"><span class="ic">🔥</span><b>重要問題だけ</b>★5つの質問（必ず聞かれる質問）。</button>'+
     '<button class="tile" data-mk="10"><span class="ic">🏁</span><b>ロング（12問）</b>本番より少し長め。約20分。</button>'+
-    '<button class="tile" data-mk="all"><span class="ic">💯</span><b>全部（22問）</b>総仕上げ。</button></div></div>';
+    '<button class="tile" data-mk="real"><span class="ic">🎯</span><b>実際に出た質問</b>11月26日の女子2次試験で出た質問（'+QUESTIONS.filter(function(q){return q.real}).length+'問）。</button>'+
+    '<button class="tile" data-mk="all"><span class="ic">💯</span><b>全部（'+QUESTIONS.length+'問）</b>総仕上げ。</button></div></div>';
   if(M.i>=M.qs.length)return mockEndHtml();
   var q=M.qs[M.i], ans=M.ans[M.i]||"";
   return '<div class="card"><div class="row"><span class="pill">質問 '+(M.i+1)+' / '+M.qs.length+'</span></div><div class="progress"><i style="width:'+Math.round(M.i/M.qs.length*100)+'%"></i></div>'+
